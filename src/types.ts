@@ -54,6 +54,7 @@ export type Task = {
   startDate: string;
   endDate: string;
   createdAt: string;
+  updatedAt: string;
   categoria: Category;
   priority: Priority;
   acciones: Accion[];
