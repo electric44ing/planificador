@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { EmployeeRole } from "@prisma/client";
+import { EmployeeRole, Prisma } from "@prisma/client";
 
 // PUT /api/admin/employees/[id] - Update an employee
 export async function PUT(
@@ -57,17 +57,20 @@ export async function DELETE(
       { status: 200 },
     );
   } catch (error) {
-    // Handle cases where the employee might be linked to tasks
-    if (error.code === "P2003") {
-      // Foreign key constraint failed
-      return NextResponse.json(
-        {
-          error:
-            "Cannot delete employee because they are assigned to one or more tasks.",
-        },
-        { status: 409 },
-      );
+    // Handle specific Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Handle cases where the employee might be linked to tasks (foreign key constraint)
+      if (error.code === "P2003") {
+        return NextResponse.json(
+          {
+            error:
+              "Cannot delete employee because they are assigned to one or more tasks.",
+          },
+          { status: 409 }, // 409 Conflict
+        );
+      }
     }
+    // Handle all other errors
     return NextResponse.json(
       { error: "Failed to delete employee" },
       { status: 500 },
