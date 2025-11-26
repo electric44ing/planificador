@@ -1,12 +1,28 @@
 import TaskCalendar from "@/components/calendar/TaskCalendar";
 import { getTasksData, getEmployeesData } from "@/lib/data";
+import { Task } from "@/types";
 
 export default async function CalendarPage() {
   // Fetch data in parallel
-  const [tasks, employees] = await Promise.all([
+  const [rawTasks, employees] = await Promise.all([
     getTasksData(),
     getEmployeesData(),
   ]);
+
+  // Serialize date fields for the client component as it can't receive Date objects directly
+  const tasks: Task[] = rawTasks.map((task) => ({
+    ...task,
+    startDate: task.startDate.toISOString(),
+    endDate: task.endDate.toISOString(),
+    createdAt: task.createdAt.toISOString(),
+    // Ensure nested date fields in 'acciones' are also serialized
+    acciones: task.acciones.map((accion) => ({
+      ...accion,
+      // Assuming 'fecha' in 'Accion' from the DB is a Date object
+      // and the 'Accion' type in `types.ts` expects a string.
+      fecha: (accion.fecha as unknown as Date).toISOString(),
+    })),
+  }));
 
   return (
     <div className="w-full max-w-7xl mx-auto mt-4 px-4">
