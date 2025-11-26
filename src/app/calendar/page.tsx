@@ -15,6 +15,7 @@ export default async function CalendarPage() {
     startDate: task.startDate.toISOString(),
     endDate: task.endDate.toISOString(),
     createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
     // Ensure nested date fields in 'acciones' are also serialized
     acciones: task.acciones.map((accion) => ({
       ...accion,

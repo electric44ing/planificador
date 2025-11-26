@@ -27,6 +27,7 @@ export default async function RootLayout({
     startDate: task.startDate.toISOString(),
     endDate: task.endDate.toISOString(),
     createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
     acciones: task.acciones.map((accion) => ({
       ...accion,
       // Assuming 'fecha' in 'Accion' from the DB is a Date object
