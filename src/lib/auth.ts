@@ -2,7 +2,6 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import * as bcrypt from "bcryptjs";
-import { User } from "@/types";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -34,6 +33,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Devuelve un objeto que coincide con la interfaz `User` extendida
         return {
           id: user.id,
           email: user.email,
@@ -46,17 +46,21 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    // El callback `jwt` se llama cuando se crea un token JWT.
+    // Aquí añadimos las propiedades personalizadas al token.
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
       }
       return token;
     },
+    // El callback `session` se llama cuando se accede a una sesión.
+    // Aquí añadimos las propiedades personalizadas al objeto de sesión desde el token.
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as User["role"];
+        session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;
     },
