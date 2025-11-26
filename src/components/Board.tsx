@@ -102,8 +102,8 @@ export default function Board() {
       const tempNewTask: Task = {
         id: tempId,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         ...taskData,
+        updatedAt: new Date().toISOString(),
         status: taskData.responsableId ? "pendiente" : "sin_planificar",
         responsable: taskData.responsableId
           ? employees.find((e) => e.id === taskData.responsableId)
