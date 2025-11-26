@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelos de la aplicación principal
+model Task {
+  id            String     @id @default(cuid())
+  titulo        String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime
+  categoria     Category
+  status        Status
+  priority      Priority   @default(MEDIA)
+  acciones      Accion[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  responsableId String?
+  responsable   Employee?  @relation("ResponsibleFor", fields: [responsableId], references: [id])
+
+  collaborators Employee[] @relation("TaskCollaborators")
+}
+
+model Accion {
+  id        String   @id @default(cuid())
+  fecha     DateTime
+  texto     String
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    String
+  createdAt DateTime @default(now())
+}
+
+// Modelos para Administración y Autenticación
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+}
+
+model Employee {
+  id                 String   @id @default(cuid())
+  name               String
+  role               EmployeeRole
+  responsibleTasks   Task[]   @relation("ResponsibleFor")
+  collaboratingTasks Task[]   @relation("TaskCollaborators")
+  createdAt          DateTime @default(now())
+}
+
+
+// Enumeraciones
+enum Status {
+  sin_planificar
+  pendiente
+  progreso
+  completada
+}
+
+enum Category {
+  Presupuestar
+  Trabajo
+  Tarea_comercial
+  Tarea_administrativa
+  Reunion
+  Visita
+  RRHH
+  Revision
+}
+
+enum Priority {
+  BAJA
+  MEDIA
+  ALTA
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum EmployeeRole {
+  Director
+  Director_Operaciones
+  Oficina_Tecnica
+  Oficial
+  Administracion
+}
