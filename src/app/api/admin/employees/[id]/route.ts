@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { EmployeeRole } from "@prisma/client";
 
 // PUT /api/admin/employees/[id] - Update an employee
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
@@ -29,14 +29,17 @@ export async function PUT(
 
     return NextResponse.json(updatedEmployee);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update employee" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update employee" },
+      { status: 500 },
+    );
   }
 }
 
 // DELETE /api/admin/employees/[id] - Delete an employee
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
@@ -49,12 +52,25 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Employee deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Employee deleted successfully" },
+      { status: 200 },
+    );
   } catch (error) {
     // Handle cases where the employee might be linked to tasks
-    if (error.code === 'P2003') { // Foreign key constraint failed
-        return NextResponse.json({ error: "Cannot delete employee because they are assigned to one or more tasks." }, { status: 409 });
+    if (error.code === "P2003") {
+      // Foreign key constraint failed
+      return NextResponse.json(
+        {
+          error:
+            "Cannot delete employee because they are assigned to one or more tasks.",
+        },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Failed to delete employee" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete employee" },
+      { status: 500 },
+    );
   }
 }
