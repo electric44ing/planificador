@@ -61,7 +61,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/employees/[id] - Delete an employee
+// DELETE /api/admin/employees/[id] - Delete an employee and their associated user
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } },
@@ -73,31 +73,47 @@ export async function DELETE(
 
   try {
     const id = params.id;
-    await prisma.employee.delete({
-      where: { id },
+
+    // Use a transaction to ensure both user and employee are deleted
+    await prisma.$transaction(async (tx) => {
+      // Find the user associated with this employee
+      const user = await tx.user.findUnique({
+        where: { employeeId: id },
+      });
+
+      // If a user is linked, delete them first
+      if (user) {
+        await tx.user.delete({ where: { id: user.id } });
+      }
+
+      // Then, attempt to delete the employee
+      // This will still fail if the employee is linked to tasks, which is handled below
+      await tx.employee.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json(
-      { message: "Employee deleted successfully" },
+      { message: "Empleado y usuario asociado eliminados con éxito." },
       { status: 200 },
     );
   } catch (error) {
-    // Handle specific Prisma errors
+    // Handle specific Prisma errors, e.g., foreign key constraint on Tasks
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Handle cases where the employee might be linked to tasks (foreign key constraint)
       if (error.code === "P2003") {
         return NextResponse.json(
           {
             error:
-              "Cannot delete employee because they are assigned to one or more tasks.",
+              "No se puede eliminar el empleado porque está asignado a una o más tareas.",
           },
           { status: 409 }, // 409 Conflict
         );
       }
     }
     // Handle all other errors
+    console.error("Failed to delete employee:", error);
     return NextResponse.json(
-      { error: "Failed to delete employee" },
+      { error: "Error al eliminar el empleado." },
       { status: 500 },
     );
   }
