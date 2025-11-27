@@ -6,7 +6,11 @@ import { Employee, EmployeeRole, EmployeeRoles } from "@/types";
 type EmployeeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (employeeData: { name: string; role: EmployeeRole }) => void;
+  onSave: (employeeData: {
+    name: string;
+    email: string;
+    role: EmployeeRole;
+  }) => void;
   employeeToEdit: Employee | null;
 };
 
@@ -17,14 +21,17 @@ export default function EmployeeModal({
   employeeToEdit,
 }: EmployeeModalProps) {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<EmployeeRole>(EmployeeRoles[0]);
 
   useEffect(() => {
     if (employeeToEdit) {
       setName(employeeToEdit.name);
+      setEmail(employeeToEdit.email);
       setRole(employeeToEdit.role);
     } else {
       setName("");
+      setEmail("");
       setRole(EmployeeRoles[0]);
     }
   }, [employeeToEdit, isOpen]);
@@ -32,11 +39,16 @@ export default function EmployeeModal({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    if (!name) {
-      alert("Por favor, introduce un nombre.");
+    if (!name || !email) {
+      alert("Por favor, introduce un nombre y un correo electrónico.");
       return;
     }
-    onSave({ name, role });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Por favor, introduce un correo electrónico válido.");
+      return;
+    }
+    onSave({ name, email, role });
   };
 
   return (
@@ -47,17 +59,44 @@ export default function EmployeeModal({
         </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nombre</label>
+            <label
+              htmlFor="employee-name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nombre
+            </label>
             <input
               type="text"
+              id="employee-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Rol</label>
+            <label
+              htmlFor="employee-email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="employee-email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="employee-role"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Rol
+            </label>
             <select
+              id="employee-role"
               value={role}
               onChange={(e) => setRole(e.target.value as EmployeeRole)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"

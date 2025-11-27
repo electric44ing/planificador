@@ -16,19 +16,44 @@ export async function PUT(
 
   try {
     const id = params.id;
-    const { name, role } = await request.json();
+    const { name, email, role } = await request.json();
 
-    if (!name || !role || !Object.values(EmployeeRole).includes(role)) {
+    if (
+      !name ||
+      !email ||
+      !role ||
+      !Object.values(EmployeeRole).includes(role)
+    ) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    // Check if email is already taken by another employee
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email },
+    });
+    if (existingEmployee && existingEmployee.id !== id) {
+      return NextResponse.json(
+        { error: "Este correo ya está en uso por otro empleado." },
+        { status: 409 },
+      );
     }
 
     const updatedEmployee = await prisma.employee.update({
       where: { id },
-      data: { name, role },
+      data: { name, email, role },
     });
 
     return NextResponse.json(updatedEmployee);
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Este correo ya está en uso por otro empleado." },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
       { error: "Failed to update employee" },
       { status: 500 },

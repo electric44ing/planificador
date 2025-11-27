@@ -42,10 +42,7 @@ export default function Board() {
   };
 
   const handleSaveTask = async (
-    taskData: Omit<
-      Task,
-      "id" | "status" | "responsable" | "createdAt" | "updatedAt"
-    > & {
+    taskData: Omit<Task, "id" | "responsable" | "createdAt" | "updatedAt"> & {
       collaboratorIds?: string[];
     },
   ) => {
@@ -56,7 +53,6 @@ export default function Board() {
       // --- Optimistic Update ---
       const originalTasks = tasks;
 
-      // Create a temporary updated task for the UI
       const tempUpdatedTask: Task = {
         ...editingTask,
         ...taskData,
@@ -66,11 +62,6 @@ export default function Board() {
         collaborators: (taskData.collaboratorIds || [])
           .map((id) => employees.find((e) => e.id === id))
           .filter(Boolean) as Employee[],
-        // Apply business rule on the frontend as well for instant feedback
-        status:
-          taskData.responsableId && editingTask.status === "sin_planificar"
-            ? "pendiente"
-            : editingTask.status,
       };
 
       setTasks(
@@ -85,7 +76,6 @@ export default function Board() {
         });
         if (!response.ok) throw new Error("Failed to update task");
 
-        // Replace the temporary task with the final one from the server
         const finalUpdatedTask = await response.json();
         setTasks(
           originalTasks.map((t) =>
@@ -107,7 +97,6 @@ export default function Board() {
         createdAt: new Date().toISOString(),
         ...taskData,
         updatedAt: new Date().toISOString(),
-        status: taskData.responsableId ? "pendiente" : "sin_planificar",
         responsable: taskData.responsableId
           ? employees.find((e) => e.id === taskData.responsableId)
           : undefined,
@@ -128,7 +117,6 @@ export default function Board() {
         if (!response.ok) throw new Error("Failed to create task");
 
         const finalNewTask = await response.json();
-        // Replace the temp task with the real one from the server
         setTasks((currentTasks) =>
           currentTasks.map((t) => (t.id === tempId ? finalNewTask : t)),
         );
@@ -142,7 +130,6 @@ export default function Board() {
 
   const handleDeleteTask = async (taskId: string) => {
     const originalTasks = tasks;
-    // Optimistic delete
     setTasks(tasks.filter((t) => t.id !== taskId));
     handleCloseModal();
 
@@ -181,15 +168,13 @@ export default function Board() {
       const newStatus = over.id as Status;
 
       if (task && task.status !== newStatus) {
-        // Business Rule: Prevent moving tasks without an assignee away from "sin_planificar"
         if (!task.responsableId && newStatus !== "sin_planificar") {
           alert(
             "Una tarea debe tener un responsable para poder moverla a esta columna.",
           );
-          return; // Cancel the move
+          return;
         }
 
-        // Optimistic UI update
         const originalTasks = tasks;
         setTasks((prevTasks) =>
           prevTasks.map((t) =>
@@ -208,7 +193,7 @@ export default function Board() {
         } catch (error) {
           console.error(error);
           alert("Error al mover la tarea. Revirtiendo cambio.");
-          setTasks(originalTasks); // Revert on error
+          setTasks(originalTasks);
         }
       }
     }
@@ -246,6 +231,7 @@ export default function Board() {
         onDelete={handleDeleteTask}
         taskToEdit={editingTask}
         employees={employees}
+        viewMode="admin"
       />
     </>
   );

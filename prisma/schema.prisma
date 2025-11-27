@@ -46,15 +46,23 @@ model User {
   password  String
   role      UserRole @default(USER)
   createdAt DateTime @default(now())
+
+  // Relación uno-a-uno con Employee
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?   @unique
 }
 
 model Employee {
   id                 String   @id @default(cuid())
   name               String
+  email              String   @unique
   role               EmployeeRole
   responsibleTasks   Task[]   @relation("ResponsibleFor")
   collaboratingTasks Task[]   @relation("TaskCollaborators")
   createdAt          DateTime @default(now())
+
+  // Relación uno-a-uno con User
+  user               User?
 }
 
 

@@ -33,21 +33,50 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, role } = await request.json();
+    const { name, email, role } = await request.json();
 
-    if (!name || !role || !Object.values(EmployeeRole).includes(role)) {
+    if (
+      !name ||
+      !email ||
+      !role ||
+      !Object.values(EmployeeRole).includes(role)
+    ) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    // Check if employee with that email already exists
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email },
+    });
+
+    if (existingEmployee) {
+      return NextResponse.json(
+        { error: "Ya existe un empleado con este correo." },
+        { status: 409 },
+      );
     }
 
     const newEmployee = await prisma.employee.create({
       data: {
         name,
+        email,
         role,
       },
     });
 
     return NextResponse.json(newEmployee, { status: 201 });
   } catch (error) {
+    console.error(error);
+    // Handle potential race conditions or other DB errors
+    if (
+      error instanceof prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Ya existe un empleado con este correo." },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
       { error: "Failed to create employee" },
       { status: 500 },

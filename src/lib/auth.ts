@@ -33,11 +33,17 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Find the corresponding employee by email
+        const employee = await prisma.employee.findUnique({
+          where: { email: credentials.email },
+        });
+
         // Devuelve un objeto que coincide con la interfaz `User` extendida
         return {
           id: user.id,
           email: user.email,
           role: user.role,
+          employeeId: employee?.id || null,
         };
       },
     }),
@@ -52,6 +58,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.employeeId = user.employeeId;
       }
       return token;
     },
@@ -61,6 +68,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.employeeId = token.employeeId;
       }
       return session;
     },

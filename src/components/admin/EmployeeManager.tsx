@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Employee, EmployeeRole, EmployeeRoles } from "@/types";
+import { Employee, EmployeeRole } from "@/types";
 import EmployeeModal from "./EmployeeModal";
 
 type EmployeeManagerProps = {
@@ -27,6 +27,7 @@ export default function EmployeeManager({
 
   const handleSave = async (employeeData: {
     name: string;
+    email: string;
     role: EmployeeRole;
   }) => {
     try {
@@ -41,7 +42,10 @@ export default function EmployeeManager({
             body: JSON.stringify(employeeData),
           },
         );
-        if (!response.ok) throw new Error("Failed to update employee");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to update employee");
+        }
         updatedEmployee = await response.json();
         setEmployees(
           employees.map((emp) =>
@@ -55,7 +59,10 @@ export default function EmployeeManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(employeeData),
         });
-        if (!response.ok) throw new Error("Failed to create employee");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create employee");
+        }
         updatedEmployee = await response.json();
         setEmployees([...employees, updatedEmployee]);
       }
@@ -109,6 +116,9 @@ export default function EmployeeManager({
           <thead>
             <tr>
               <th className="py-2 px-4 border-b text-left">Nombre</th>
+              <th className="py-2 px-4 border-b text-left">
+                Correo Electrónico
+              </th>
               <th className="py-2 px-4 border-b text-left">Rol</th>
               <th className="py-2 px-4 border-b text-left">Acciones</th>
             </tr>
@@ -117,6 +127,7 @@ export default function EmployeeManager({
             {employees.map((employee) => (
               <tr key={employee.id}>
                 <td className="py-2 px-4 border-b">{employee.name}</td>
+                <td className="py-2 px-4 border-b">{employee.email}</td>
                 <td className="py-2 px-4 border-b">{employee.role}</td>
                 <td className="py-2 px-4 border-b">
                   <button

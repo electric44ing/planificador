@@ -38,6 +38,7 @@ export type Priority = (typeof Priorities)[number];
 export type Employee = {
   id: string;
   name: string;
+  email: string;
   role: EmployeeRole;
 };
 
