@@ -73,7 +73,10 @@ export default function TaskCalendar({
   };
 
   const handleSaveTask = async (
-    taskData: Omit<Task, "id" | "status" | "responsable" | "createdAt">,
+    taskData: Omit<
+      Task,
+      "id" | "status" | "responsable" | "createdAt" | "updatedAt"
+    > & { collaboratorIds?: string[] },
   ) => {
     if (selectedTask) {
       // Edit existing task
