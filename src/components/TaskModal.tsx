@@ -153,22 +153,25 @@ export default function TaskModal({
 
           {/* Status and Priority */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Estado
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as Status)}
-                className="mt-1 block w-full px-3 py-2 border bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500"
-              >
-                {statusOptions.map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1).replace("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Show Status field only when editing or in employee view */}
+            {(taskToEdit || viewMode === "employee") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Estado
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as Status)}
+                  className="mt-1 block w-full px-3 py-2 border bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500"
+                >
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1).replace("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Prioridad

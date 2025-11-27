@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { EmployeeRole, Prisma } from "@prisma/client"; // <-- Corrected import
+import { EmployeeRole, Prisma } from "@prisma/client";
 import { getEmployeesData } from "@/lib/data";
+import * as bcrypt from "bcryptjs";
 
 // GET /api/admin/employees - Get all employees
 export async function GET() {
@@ -24,7 +25,7 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/employees - Create a new employee
+// POST /api/admin/employees - Create a new employee and a corresponding user
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
@@ -44,41 +45,63 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    // Check if employee with that email already exists
-    const existingEmployee = await prisma.employee.findUnique({
-      where: { email },
+    // Generate a temporary password
+    const temporaryPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    // Use a transaction to ensure both employee and user are created, or neither.
+    const newEmployee = await prisma.$transaction(async (tx) => {
+      const existingUser = await tx.user.findUnique({ where: { email } });
+      if (existingUser) {
+        throw new Error("Ya existe un usuario con este correo.");
+      }
+      const existingEmployee = await tx.employee.findUnique({
+        where: { email },
+      });
+      if (existingEmployee) {
+        throw new Error("Ya existe un empleado con este correo.");
+      }
+
+      const createdEmployee = await tx.employee.create({
+        data: { name, email, role },
+      });
+
+      await tx.user.create({
+        data: {
+          email: email,
+          password: hashedPassword,
+          role: "USER",
+          employeeId: createdEmployee.id,
+        },
+      });
+
+      return createdEmployee;
     });
 
-    if (existingEmployee) {
-      return NextResponse.json(
-        { error: "Ya existe un empleado con este correo." },
-        { status: 409 },
-      );
-    }
-
-    const newEmployee = await prisma.employee.create({
-      data: {
-        name,
-        email,
-        role,
-      },
-    });
-
-    return NextResponse.json(newEmployee, { status: 201 });
+    return NextResponse.json(
+      { employee: newEmployee, temporaryPassword },
+      { status: 201 },
+    );
   } catch (error) {
-    console.error(error);
-    // Handle potential race conditions or other DB errors
+    console.error("Error creating employee and user:", error);
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError && // <-- Corrected usage
+      error instanceof Error &&
+      (error.message.includes("Ya existe un usuario") ||
+        error.message.includes("Ya existe un empleado"))
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "Ya existe un empleado con este correo." },
+        { error: "El correo electrónico ya está en uso." },
         { status: 409 },
       );
     }
     return NextResponse.json(
-      { error: "Failed to create employee" },
+      { error: "Failed to create employee and user" },
       { status: 500 },
     );
   }

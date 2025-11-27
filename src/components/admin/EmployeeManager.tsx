@@ -31,7 +31,6 @@ export default function EmployeeManager({
     role: EmployeeRole;
   }) => {
     try {
-      let updatedEmployee: Employee;
       if (editingEmployee) {
         // Update existing employee
         const response = await fetch(
@@ -46,14 +45,14 @@ export default function EmployeeManager({
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to update employee");
         }
-        updatedEmployee = await response.json();
+        const updatedEmployee = await response.json();
         setEmployees(
           employees.map((emp) =>
             emp.id === updatedEmployee.id ? updatedEmployee : emp,
           ),
         );
       } else {
-        // Create new employee
+        // Create new employee and user
         const response = await fetch("/api/admin/employees", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -63,8 +62,13 @@ export default function EmployeeManager({
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to create employee");
         }
-        updatedEmployee = await response.json();
-        setEmployees([...employees, updatedEmployee]);
+        const { employee: newEmployee, temporaryPassword } =
+          await response.json();
+        setEmployees([...employees, newEmployee]);
+        // Show the temporary password to the admin
+        alert(
+          `Usuario creado con éxito.\n\nCorreo: ${newEmployee.email}\nContraseña Temporal: ${temporaryPassword}\n\nPor favor, guarda esta contraseña y compártela con el empleado.`,
+        );
       }
       handleCloseModal();
     } catch (error) {

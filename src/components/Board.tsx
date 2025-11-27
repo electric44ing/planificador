@@ -47,20 +47,27 @@ export default function Board() {
     },
   ) => {
     // Close modal immediately for a faster perceived response
+
     handleCloseModal();
 
     if (editingTask) {
       // --- Optimistic Update ---
+
       const originalTasks = tasks;
 
       const tempUpdatedTask: Task = {
         ...editingTask,
+
         ...taskData,
+
         responsable: taskData.responsableId
           ? employees.find((e) => e.id === taskData.responsableId)
           : undefined,
+
         collaborators: (taskData.collaboratorIds || [])
+
           .map((id) => employees.find((e) => e.id === id))
+
           .filter(Boolean) as Employee[],
       };
 
@@ -71,12 +78,16 @@ export default function Board() {
       try {
         const response = await fetch(`/api/tasks/${editingTask.id}`, {
           method: "PUT",
+
           headers: { "Content-Type": "application/json" },
+
           body: JSON.stringify(taskData),
         });
+
         if (!response.ok) throw new Error("Failed to update task");
 
         const finalUpdatedTask = await response.json();
+
         setTasks(
           originalTasks.map((t) =>
             t.id === finalUpdatedTask.id ? finalUpdatedTask : t,
@@ -84,25 +95,41 @@ export default function Board() {
         );
       } catch (error) {
         console.error(error);
+
         alert("Error al actualizar la tarea. Revirtiendo cambios.");
+
         setTasks(originalTasks); // Revert on error
       }
     } else {
       // --- Optimistic Create ---
+
       const tempId = `temp-${Date.now()}`;
+
       const originalTasks = tasks;
 
       const tempNewTask: Task = {
         id: tempId,
+
         createdAt: new Date().toISOString(),
+
         ...taskData,
+
         updatedAt: new Date().toISOString(),
+
+        // Business Rule: Set status based on responsable assignment on creation
+
+        status: taskData.responsableId ? "pendiente" : "sin_planificar",
+
         responsable: taskData.responsableId
           ? employees.find((e) => e.id === taskData.responsableId)
           : undefined,
+
         collaborators: (taskData.collaboratorIds || [])
+
           .map((id) => employees.find((e) => e.id === id))
+
           .filter(Boolean) as Employee[],
+
         acciones: [], // Start with no actions
       };
 
@@ -111,18 +138,24 @@ export default function Board() {
       try {
         const response = await fetch("/api/tasks", {
           method: "POST",
+
           headers: { "Content-Type": "application/json" },
+
           body: JSON.stringify(taskData),
         });
+
         if (!response.ok) throw new Error("Failed to create task");
 
         const finalNewTask = await response.json();
+
         setTasks((currentTasks) =>
           currentTasks.map((t) => (t.id === tempId ? finalNewTask : t)),
         );
       } catch (error) {
         console.error(error);
+
         alert("Error al crear la tarea. Revirtiendo cambios.");
+
         setTasks(originalTasks); // Revert on error
       }
     }
