@@ -181,6 +181,14 @@ export default function Board() {
       const newStatus = over.id as Status;
 
       if (task && task.status !== newStatus) {
+        // Business Rule: Prevent moving tasks without an assignee away from "sin_planificar"
+        if (!task.responsableId && newStatus !== "sin_planificar") {
+          alert(
+            "Una tarea debe tener un responsable para poder moverla a esta columna.",
+          );
+          return; // Cancel the move
+        }
+
         // Optimistic UI update
         const originalTasks = tasks;
         setTasks((prevTasks) =>

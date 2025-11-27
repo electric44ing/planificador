@@ -5,6 +5,16 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/types.ts", // Also scan types file just in case
+  ],
+  safelist: [
+    "bg-red-500",
+    "bg-yellow-500",
+    "bg-green-500",
+    "bg-gray-200",
+    "bg-yellow-200",
+    "bg-blue-200",
+    "bg-green-200",
   ],
   theme: {
     extend: {
