@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
-          return null;
+          throw new Error("Por favor, introduce tu correo y contraseña.");
         }
 
         const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) {
-          return null;
+          throw new Error("No se encontró un usuario con ese correo.");
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordValid) {
-          return null;
+          throw new Error("La contraseña es incorrecta.");
         }
 
         // Find the corresponding employee by email
