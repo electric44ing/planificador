@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { EmployeeRole } from "@prisma/client";
+import { EmployeeRole, Prisma } from "@prisma/client"; // <-- Corrected import
 import { getEmployeesData } from "@/lib/data";
 
 // GET /api/admin/employees - Get all employees
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     console.error(error);
     // Handle potential race conditions or other DB errors
     if (
-      error instanceof prisma.PrismaClientKnownRequestError &&
+      error instanceof Prisma.PrismaClientKnownRequestError && // <-- Corrected usage
       error.code === "P2002"
     ) {
       return NextResponse.json(
