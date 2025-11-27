@@ -62,7 +62,11 @@ export default function EmployeeManager({
       handleCloseModal();
     } catch (error) {
       console.error(error);
-      alert(`Error: ${error.message}`);
+      if (error instanceof Error) {
+        alert(`Error: ${error.message}`);
+      } else {
+        alert("An unknown error occurred while saving the employee.");
+      }
     }
   };
 
@@ -81,7 +85,11 @@ export default function EmployeeManager({
         setEmployees(employees.filter((emp) => emp.id !== employeeId));
       } catch (error) {
         console.error(error);
-        alert(`Error: ${error.message}`);
+        if (error instanceof Error) {
+          alert(`Error: ${error.message}`);
+        } else {
+          alert("An unknown error occurred while deleting the employee.");
+        }
       }
     }
   };
