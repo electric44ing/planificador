@@ -42,7 +42,10 @@ export default function Board() {
   };
 
   const handleSaveTask = async (
-    taskData: Omit<Task, "id" | "status" | "responsable" | "createdAt"> & {
+    taskData: Omit<
+      Task,
+      "id" | "status" | "responsable" | "createdAt" | "updatedAt"
+    > & {
       collaboratorIds?: string[];
     },
   ) => {

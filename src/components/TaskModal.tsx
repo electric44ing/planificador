@@ -14,7 +14,10 @@ type TaskModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (
-    task: Omit<Task, "id" | "status" | "responsable" | "createdAt"> & {
+    task: Omit<
+      Task,
+      "id" | "status" | "responsable" | "createdAt" | "updatedAt"
+    > & {
       collaboratorIds?: string[];
     },
   ) => void;
