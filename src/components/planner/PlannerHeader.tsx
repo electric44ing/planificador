@@ -82,9 +82,9 @@ export default function PlannerHeader() {
 
   return (
     <BaseHeader>
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-start gap-x-12 w-full">
         {/* Nav Links */}
-        <nav className="flex items-center space-x-6">
+        <nav className="flex items-center space-x-6 flex-shrink-0">
           <Link
             href="/planner"
             className={`font-medium ${
