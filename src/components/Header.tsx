@@ -175,10 +175,17 @@ const Header = () => {
                       {session.user?.email}
                     </p>
                   </div>
-                  <div className="p-2">
+                  <div className="p-2 space-y-1">
+                    <Link
+                      href="/account/change-password"
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Cambiar Contraseña
+                    </Link>
                     <button
                       onClick={() => signOut({ callbackUrl: "/login" })}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white rounded-md"
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-500 hover:text-white rounded-md"
                     >
                       Cerrar Sesión
                     </button>
