@@ -33,14 +33,14 @@ export default function PlatformHomePage() {
               <span className="text-2xl mr-4">📅</span>
               <span>Planificador de Tareas</span>
             </Link>
-            {/* New Module Link (disabled for now) */}
-            <div
-              className="flex items-center w-full text-left px-6 py-4 text-lg text-gray-400 font-semibold bg-gray-50 rounded-md cursor-not-allowed"
-              title="Próximamente"
+            <Link
+              href="/projects/create"
+              className="flex items-center w-full text-left px-6 py-4 text-lg text-green-700 font-semibold bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+              title="Crear un nuevo presupuesto o proyecto"
             >
               <span className="text-2xl mr-4">📝</span>
               <span>Crear Presupuesto/Proyecto</span>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

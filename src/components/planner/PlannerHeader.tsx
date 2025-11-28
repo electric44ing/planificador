@@ -108,7 +108,7 @@ export default function PlannerHeader() {
         </nav>
 
         {/* Progress Bars */}
-        <div className="w-full max-w-lg space-y-1">
+        <div className="max-w-lg space-y-1">
           <ProgressBar
             title={`Tareas por Vencimiento (${tasks.length})`}
             segments={dueDateSegments}

@@ -1,31 +1,38 @@
 import type { DefaultSession, DefaultUser } from "next-auth";
+import type { JWT as NextAuthJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   /**
-   * Extiende los tipos por defecto de la sesión para incluir el rol y el id del usuario.
+   * The shape of the user object in the session.
    */
   interface Session extends DefaultSession {
+    accessToken?: string;
     user: {
       id: string;
       role: string;
-      employeeId?: string | null; // <-- ADDED
+      employeeId?: string | null;
     } & DefaultSession["user"];
   }
 
   /**
-   * Extiende el tipo por defecto del usuario para incluir el rol.
+   * The shape of the user object returned by the adapter or authorize function.
    */
   interface User extends DefaultUser {
     role: string;
-    employeeId?: string | null; // <-- ADDED
+    employeeId?: string | null;
   }
 }
 
 declare module "next-auth/jwt" {
-  /** Extiende el token JWT para incluir el rol y el id del usuario. */
-  interface JWT {
+  /**
+   * The shape of the JWT token.
+   */
+  interface JWT extends NextAuthJWT {
     id: string;
     role: string;
-    employeeId?: string | null; // <-- ADDED
+    employeeId?: string | null;
+    accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
   }
 }
