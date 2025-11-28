@@ -70,8 +70,8 @@ export default function DriveManager() {
     if (!status.yearFolderExists) {
       return (
         <p className="text-orange-600">
-          La carpeta del año "{status.yearFolder?.name || new Date().getFullYear()}" no
-          existe en la raíz de Drive. Debe ser creada manualmente.
+          La carpeta del año "{new Date().getFullYear()}" no existe en la raíz
+          de Drive. Debe ser creada manualmente.
         </p>
       );
     }
@@ -85,11 +85,22 @@ export default function DriveManager() {
       );
     }
 
+    // Add a final check to satisfy TypeScript
+    if (!status.yearFolder || !status.studyFolder) {
+      return (
+        <p className="text-red-600">
+          Error de estado inconsistente. Refresca la página.
+        </p>
+      );
+    }
+
     // If everything exists, show the creation UI
     return (
       <div>
         <div className="p-3 bg-green-50 border border-green-200 rounded-md mb-4">
-          <p className="font-semibold text-green-800">Estructura de carpetas encontrada:</p>
+          <p className="font-semibold text-green-800">
+            Estructura de carpetas encontrada:
+          </p>
           <p className="text-sm text-gray-600">
             {status.yearFolder.name} / {status.studyFolder.name}
           </p>
