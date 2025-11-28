@@ -1,12 +1,18 @@
 "use client";
 
 import React, { useMemo } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTasks } from "@/context/TasksContext";
+import BaseHeader from "../common/BaseHeader";
 import ProgressBar, { ProgressBarSegment } from "../ProgressBar";
 import { getTrafficLightColor } from "@/lib/utils";
 import { statusColors } from "@/types";
 
 export default function PlannerHeader() {
+  const { data: session } = useSession();
+  const pathname = usePathname();
   const { tasks } = useTasks();
 
   const dueDateSegments = useMemo((): ProgressBarSegment[] => {
@@ -48,9 +54,7 @@ export default function PlannerHeader() {
       progreso: 0,
       completada: 0,
     };
-    tasks.forEach((task) => {
-      statusCounts[task.status]++;
-    });
+    tasks.forEach((task) => statusCounts[task.status]++);
     const total = tasks.length;
     return [
       {
@@ -77,12 +81,34 @@ export default function PlannerHeader() {
   }, [tasks]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-4">
-      <div className="p-4 bg-white rounded-lg shadow-sm border">
-        <h2 className="text-xl font-bold text-gray-800 mb-3">
-          Resumen del Planificador
-        </h2>
-        <div className="space-y-2">
+    <BaseHeader>
+      <div className="flex items-center justify-between w-full">
+        {/* Nav Links */}
+        <nav className="flex items-center space-x-6">
+          <Link
+            href="/planner"
+            className={`font-medium ${
+              pathname.startsWith("/planner")
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-blue-600"
+            }`}
+          >
+            Planificador
+          </Link>
+          <Link
+            href="/calendar"
+            className={`font-medium ${
+              pathname.startsWith("/calendar")
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-blue-600"
+            }`}
+          >
+            Calendario
+          </Link>
+        </nav>
+
+        {/* Progress Bars */}
+        <div className="w-full max-w-lg space-y-1">
           <ProgressBar
             title={`Tareas por Vencimiento (${tasks.length})`}
             segments={dueDateSegments}
@@ -90,6 +116,6 @@ export default function PlannerHeader() {
           <ProgressBar title="Tareas por Estado" segments={statusSegments} />
         </div>
       </div>
-    </div>
+    </BaseHeader>
   );
 }

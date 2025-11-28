@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import BaseHeader from "@/components/common/BaseHeader";
+import HomeHeader from "@/components/home/HomeHeader";
 
 export default function PlatformHomePage() {
   return (
     <>
-      <BaseHeader />
+      <HomeHeader />
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] text-center p-8">
         <Image
           src="/logo.png"

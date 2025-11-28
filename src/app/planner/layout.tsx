@@ -1,7 +1,7 @@
 import { TasksProvider } from "@/context/TasksContext";
 import { getTasksData, getEmployeesData } from "@/lib/data";
 import { Task } from "@/types";
-import PlannerNavHeader from "@/components/planner/PlannerNavHeader";
+import PlannerHeader from "@/components/planner/PlannerHeader";
 
 // This ensures this layout is always dynamically rendered
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export default async function PlannerLayout({
       initialTasks={initialTasks}
       initialEmployees={initialEmployees}
     >
-      <PlannerNavHeader />
+      <PlannerHeader />
       <main className="flex flex-col items-center w-full">{children}</main>
     </TasksProvider>
   );
