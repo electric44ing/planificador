@@ -7,6 +7,8 @@ import { getTasksData, getEmployeesData } from "@/lib/data";
 import Header from "@/components/Header";
 import { Task } from "@/types";
 
+export const dynamic = "force-dynamic"; // Force dynamic rendering, disable caching
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
