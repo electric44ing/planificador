@@ -3,18 +3,20 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import LoginForm from "@/components/LoginForm";
 
-// This is a Server Component
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const session = await getServerSession(authOptions);
 
-  // If the user is already logged in, redirect them away from the login page.
+  // If the user is already logged in, redirect them.
   if (session) {
-    redirect("/");
+    const callbackUrl = searchParams?.callbackUrl || "/";
+    redirect(Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl);
   }
+
+  const error = searchParams?.error;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -22,7 +24,7 @@ export default async function LoginPage({
         <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">
           Iniciar Sesión
         </h1>
-        <LoginForm error={searchParams?.error} />
+        <LoginForm error={Array.isArray(error) ? error[0] : error} />
       </div>
     </div>
   );
