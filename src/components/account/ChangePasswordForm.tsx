@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -9,6 +10,8 @@ export default function ChangePasswordForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +44,16 @@ export default function ChangePasswordForm() {
         throw new Error(data.error || "Algo salió mal.");
       }
 
-      setSuccess("¡Contraseña actualizada con éxito!");
+      setSuccess("¡Contraseña actualizada con éxito! Redirigiendo...");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+
+      // Redirect after a short delay
+      setTimeout(() => {
+        const callbackUrl = searchParams.get("callbackUrl");
+        router.push(callbackUrl || "/");
+      }, 2000);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -52,7 +61,10 @@ export default function ChangePasswordForm() {
         setError("Ocurrió un error inesperado.");
       }
     } finally {
-      setIsLoading(false);
+      // Don't set isLoading to false if we are about to redirect
+      if (success === "") {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -83,6 +95,7 @@ export default function ChangePasswordForm() {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          disabled={!!success}
         />
       </div>
 
@@ -100,6 +113,7 @@ export default function ChangePasswordForm() {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          disabled={!!success}
         />
       </div>
 
@@ -117,13 +131,14 @@ export default function ChangePasswordForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          disabled={!!success}
         />
       </div>
 
       <div>
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !!success}
           className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
         >
           {isLoading ? "Guardando..." : "Guardar Cambios"}

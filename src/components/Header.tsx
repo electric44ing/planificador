@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTasks } from "@/context/TasksContext";
 import ProgressBar, { ProgressBarSegment } from "./ProgressBar";
@@ -13,6 +14,7 @@ const Header = () => {
   const { tasks } = useTasks();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const isAuthenticated = status === "authenticated";
 
@@ -34,7 +36,6 @@ const Header = () => {
 
   const dueDateSegments = useMemo((): ProgressBarSegment[] => {
     if (!tasks || tasks.length === 0) return [];
-    // ... (logic remains the same)
     let redCount = 0,
       yellowCount = 0,
       greenCount = 0;
@@ -66,7 +67,6 @@ const Header = () => {
 
   const statusSegments = useMemo((): ProgressBarSegment[] => {
     if (!tasks || tasks.length === 0) return [];
-    // ... (logic remains the same)
     const statusCounts = {
       sin_planificar: 0,
       pendiente: 0,
@@ -147,7 +147,6 @@ const Header = () => {
                 <span className="font-medium text-sm text-gray-700 hidden md:inline">
                   {session.user?.email}
                 </span>
-                {/* Generic User Icon */}
                 <svg
                   className="w-6 h-6 text-gray-600"
                   fill="none"
@@ -164,7 +163,6 @@ const Header = () => {
                 </svg>
               </button>
 
-              {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-20 border">
                   <div className="p-4 border-b">
@@ -177,7 +175,7 @@ const Header = () => {
                   </div>
                   <div className="p-2 space-y-1">
                     <Link
-                      href="/account/change-password"
+                      href={`/account/change-password?callbackUrl=${pathname}`}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                       onClick={() => setIsDropdownOpen(false)}
                     >
