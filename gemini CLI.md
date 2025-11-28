@@ -582,7 +582,7 @@ const statusColors: { [key in Task["status"]]: string } = {
 export default function TaskCard({ task }: TaskCardProps) {
   return (
     <div
-      className={`p-4 mb-4 rounded-lg shadow-md ${
+      className={`p-4 mb-4 rounded-lg shadow-md ${ 
         statusColors[task.status]
       }`}
     >
@@ -1057,3 +1057,35 @@ Desde la propuesta inicial, el proyecto ha avanzado significativamente, incorpor
 
 ### Corrección de Errores
 - Se han solucionado múltiples errores relacionados con el manejo de fechas, la creación de tareas con relaciones en la base de datos y la visualización de imágenes estáticas.
+---
+
+## Funcionalidades Implementadas Recientemente
+
+### 1. Vista Móvil para Empleados (`/mobile`)
+Se ha creado una nueva sección en la aplicación, accesible en la ruta `/mobile`, diseñada exclusivamente para dispositivos móviles.
+
+*   **Descripción:** Permite a los empleados (no administradores) ver y gestionar únicamente las tareas que tienen asignadas.
+*   **Detalles Técnicos:**
+    *   **Ruta Protegida:** La página utiliza `getServerSession` para asegurar que solo usuarios autenticados puedan acceder. Si no hay sesión, redirige a `/login` guardando la `callbackUrl`.
+    *   **Filtro de Tareas:** Se ha creado una nueva función `getEmployeeTasks` en `lib/data.ts` que filtra las tareas de la base de datos para mostrar solo aquellas donde el `employeeId` del usuario de la sesión coincide con el `responsableId` o está en la lista de `collaborators`.
+    *   **Interfaz Móvil:** La vista (`MobileView.tsx`) es un componente cliente con pestañas para los estados "Pendiente", "En Progreso" y "Completada". Las tareas se muestran en tarjetas (`MobileTaskCard.tsx`) que indican el rol del empleado ("Responsable" o "Colaborador").
+    *   **Edición Simplificada:** Al tocar una tarea, se abre un modal (`TaskModal` en modo `employee`) que permite al empleado añadir acciones y cambiar el estado de la tarea, pero no modificar campos de administrador como el responsable o los colaboradores.
+
+### 2. Creación de Usuarios para Empleados
+Se ha implementado un flujo completo para que la creación de un empleado genere también sus credenciales de acceso.
+
+*   **Descripción:** Al crear un empleado desde el panel de administrador, el sistema ahora también crea una cuenta de usuario para que pueda iniciar sesión.
+*   **Detalles Técnicos:**
+    *   **Esquema de Base de Datos:** Se ha modificado `prisma/schema.prisma` para añadir un campo `email` único al modelo `Employee` y para crear una relación uno-a-uno con el modelo `User`. Se generó una nueva migración.
+    *   **API Atómica:** El endpoint `POST /api/admin/employees` se ha refactorizado para usar `prisma.$transaction`. Esto asegura que la creación del `Employee` y del `User` se realice de forma atómica (o ambas tienen éxito, o ninguna lo tiene).
+    *   **Contraseña Temporal:** La API ahora genera una contraseña temporal aleatoria para el nuevo usuario, la hashea con `bcryptjs`, y la devuelve al frontend.
+    *   **Interfaz de Admin:** El formulario de creación de empleados ahora incluye el campo `email` y muestra una alerta con la contraseña temporal al crear un usuario con éxito.
+
+### 3. Gestión de Cuenta de Usuario
+Se han añadido funcionalidades básicas para que los usuarios gestionen su propia cuenta.
+
+*   **Descripción:** Los usuarios con sesión iniciada ahora pueden cambiar su contraseña y cerrar su sesión.
+*   **Detalles Técnicos:**
+    *   **Cambio de Contraseña:** Se ha creado una nueva página protegida en `/account/change-password` con un formulario para este propósito. Un nuevo endpoint de API (`POST /api/account/change-password`) verifica la contraseña actual y guarda la nueva de forma segura. La redirección después del cambio es inteligente y devuelve al usuario a la página anterior.
+    *   **Menú de Sesión en Header:** El `Header` ahora usa `useSession` para mostrar un menú de perfil. El menú incluye un enlace a la página de cambio de contraseña (que pasa la `callbackUrl` actual) y un botón que llama a `signOut`.
+    *   **SessionProvider:** Se ha añadido el `SessionProvider` de NextAuth en el `layout.tsx` principal para dar acceso al contexto de la sesión a toda la aplicación.

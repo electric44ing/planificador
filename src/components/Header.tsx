@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useTasks } from "@/context/TasksContext";
-import ProgressBar, { ProgressBarSegment } from "./ProgressBar";
-import { getTrafficLightColor } from "@/lib/utils";
-import { statusColors } from "@/types";
 
 const Header = () => {
   const { data: session, status } = useSession();
-  const { tasks } = useTasks();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -34,75 +29,8 @@ const Header = () => {
     };
   }, [dropdownRef]);
 
-  const dueDateSegments = useMemo((): ProgressBarSegment[] => {
-    if (!tasks || tasks.length === 0) return [];
-    let redCount = 0,
-      yellowCount = 0,
-      greenCount = 0;
-    tasks.forEach((task) => {
-      const color = getTrafficLightColor(task.endDate);
-      if (color === "red") redCount++;
-      else if (color === "yellow") yellowCount++;
-      else greenCount++;
-    });
-    const total = tasks.length;
-    return [
-      {
-        label: "Vencidas",
-        percent: (redCount / total) * 100,
-        colorClass: "bg-red-500",
-      },
-      {
-        label: "Próximas",
-        percent: (yellowCount / total) * 100,
-        colorClass: "bg-yellow-500",
-      },
-      {
-        label: "Con tiempo",
-        percent: (greenCount / total) * 100,
-        colorClass: "bg-green-500",
-      },
-    ];
-  }, [tasks]);
-
-  const statusSegments = useMemo((): ProgressBarSegment[] => {
-    if (!tasks || tasks.length === 0) return [];
-    const statusCounts = {
-      sin_planificar: 0,
-      pendiente: 0,
-      progreso: 0,
-      completada: 0,
-    };
-    tasks.forEach((task) => {
-      statusCounts[task.status]++;
-    });
-    const total = tasks.length;
-    return [
-      {
-        label: "Sin Planificar",
-        percent: (statusCounts.sin_planificar / total) * 100,
-        colorClass: statusColors.sin_planificar,
-      },
-      {
-        label: "Pendiente",
-        percent: (statusCounts.pendiente / total) * 100,
-        colorClass: statusColors.pendiente,
-      },
-      {
-        label: "En Progreso",
-        percent: (statusCounts.progreso / total) * 100,
-        colorClass: statusColors.progreso,
-      },
-      {
-        label: "Completada",
-        percent: (statusCounts.completada / total) * 100,
-        colorClass: statusColors.completada,
-      },
-    ];
-  }, [tasks]);
-
   return (
-    <header className="w-full p-2 bg-white border-b shadow-sm">
+    <header className="w-full p-2 bg-white border-b shadow-sm sticky top-0 z-20">
       <div className="max-w-full mx-auto px-4 flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center flex-1">
@@ -112,31 +40,48 @@ const Header = () => {
               alt="Electric 44 Logo"
               style={{ width: "160px", height: "57px" }}
             />
-            {isAuthenticated && (
-              <h1 className="ml-4 text-2xl font-bold text-gray-900 hidden sm:block">
-                Planificador
-              </h1>
-            )}
           </Link>
         </div>
 
-        {/* Center Section */}
+        {/* Center Section: Main Navigation */}
         {isAuthenticated && (
-          <div className="flex-1 flex justify-center items-center px-4">
-            <div className="w-full max-w-lg space-y-1">
-              <ProgressBar
-                title={`Tareas por Vencimiento (${tasks.length})`}
-                segments={dueDateSegments}
-              />
-              <ProgressBar
-                title="Tareas por Estado"
-                segments={statusSegments}
-              />
-            </div>
-          </div>
+          <nav className="flex-1 flex justify-center items-center space-x-6">
+            <Link
+              href="/planner"
+              className={`font-medium ${
+                pathname.startsWith("/planner")
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Planificador
+            </Link>
+            <Link
+              href="/calendar"
+              className={`font-medium ${
+                pathname.startsWith("/calendar")
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Calendario
+            </Link>
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                className={`font-medium ${
+                  pathname.startsWith("/admin")
+                    ? "text-blue-600"
+                    : "text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                Admin
+              </Link>
+            )}
+          </nav>
         )}
 
-        {/* Right Section */}
+        {/* Right Section: Profile & Auth */}
         <div className="flex items-center justify-end space-x-4 flex-1">
           {isAuthenticated ? (
             <div className="relative" ref={dropdownRef}>
